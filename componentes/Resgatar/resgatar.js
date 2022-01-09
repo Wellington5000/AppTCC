@@ -5,9 +5,12 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 const Resgatar = ({navigation}) => {
   return (
     <View style={estilos.container}>
-      <TouchableOpacity onPress={() => navigation.navigate('Payment')}>
-        <Image style={estilos.imagem} source={require('../../images/vectorpaint.png')}></Image>
-      </TouchableOpacity>
+      <View style={estilos.imagens}>
+        <TouchableOpacity onPress={() => navigation.navigate('Payment')}>
+            <Image style={estilos.imagem} source={require('../../images/vectorpaint.png')}></Image>
+        </TouchableOpacity>
+        <Image style={estilos.imagemLogo} source={require('../../images/logo.png')}></Image>
+      </View>
       <Text style={estilos.textoHistorico}>Resgatar</Text>
       <View style={estilos.painelBranco}>
         <View style={estilos.painelTotalCashabck}>
@@ -59,7 +62,7 @@ const estilos = StyleSheet.create({
     height: 25
   }, 
   textoHistorico: {
-    marginTop: 100,
+    marginTop: 50,
     marginLeft: 270,
     color: 'white',
     fontSize: 25,
@@ -105,6 +108,15 @@ const estilos = StyleSheet.create({
       color: '#303539',
       marginTop: 12,
       marginLeft: 10
+  },
+  imagemLogo: {
+    width: 80,
+    height: 80,
+    marginLeft: 250,
+    marginTop: 30
+  },
+  imagens: {
+      flexDirection: 'row'
   }
 });
 

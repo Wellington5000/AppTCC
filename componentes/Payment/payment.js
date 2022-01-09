@@ -27,7 +27,7 @@ const Payment = ({navigation}) => {
                     <Image style={estilos.imagem} source={require('../../images/elegant-antique-building-shape-with-columns.png')}></Image>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={estilos.botaoResgatar}>
+                <TouchableOpacity style={estilos.botaoResgatar} onPress={() => navigation.navigate('LojasProximas')}>
                     <Text style={estilos.texto}>Lojas Próximas</Text>
                     <Image style={estilos.imagem} source={require('../../images/dataPagamento.png')}></Image>
                 </TouchableOpacity>
