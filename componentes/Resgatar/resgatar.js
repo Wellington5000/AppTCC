@@ -1,8 +1,35 @@
-import React from 'react';
-import {View, StyleSheet, Image, Text} from 'react-native';
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import {View, StyleSheet, Image, Text, Alert} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
+import NumberFormat from 'react-number-format';
+import AsyncStorage from '@react-native-community/async-storage';
 
-const Resgatar = ({navigation}) => {
+const Resgatar = ({route, navigation}) => {
+  const [dadosBancarios, setDadosBancarios] = useState({})
+  
+  const createTwoButtonAlert = () =>
+  Alert.alert(
+    "Resgate Efetivado",
+    "O valor solitado foi enviado para sua conta",
+    [
+      { text: "Confirmar", onPress: () => console.log("OK Pressed") }
+    ]
+  );
+
+  async function resgate(){
+    let cpf = await AsyncStorage.getItem('cpf')
+    await axios.post( BASEURL + '/resgate_cliente', {chave_pix: dadosBancarios.chave_pix, valor: route.params.dadosBancarios.saldo_disponivel, cpf: cpf}).then((res) => {
+      Saldo = 0
+      dadosBancarios.saldo_disponivel = 0
+      if(res.data) createTwoButtonAlert()
+    })
+  }
+
+  useEffect(() => {
+    setDadosBancarios(route.params.dadosBancarios)
+  }, []);
+
   return (
     <View style={estilos.container}>
       <View style={estilos.imagens}>
@@ -14,24 +41,32 @@ const Resgatar = ({navigation}) => {
       <Text style={estilos.textoHistorico}>Resgatar</Text>
       <View style={estilos.painelBranco}>
         <View style={estilos.painelTotalCashabck}>
-          <Text style={estilos.textoTotalCashback}>
-            Saldo Disponível                                                          58,00 R$
-          </Text>
+          <NumberFormat 
+            value={dadosBancarios.saldo_disponivel} 
+            decimalScale={2}
+            displayType={'text'} 
+            thousandSeparator={true} 
+            prefix={'R$ '} 
+            renderText={(value, props) => 
+              <Text style={estilos.textoTotalCashback}>
+                Saldo Disponível                                                          {value}
+              </Text>} 
+            />
         </View>
 
-        <TouchableOpacity style={estilos.botaoResgatar}>
+        <TouchableOpacity style={estilos.botaoResgatar} onPress={() => resgate()}>
             <Text style={estilos.textoResgatar}>Resgatar</Text>
         </TouchableOpacity>
 
         <View style={estilos.painelDadosBancarios}>
             <Text style={estilos.textoDadosBancarios}>Dados Bancários</Text>
-            <Text style={estilos.textoDadosBancarios}>Conta                                                                                 64521522-9</Text>
-            <Text style={estilos.textoDadosBancarios}>Agência                                                                                     564213</Text>
+            <Text style={estilos.textoDadosBancarios}>Conta                                                                                        {dadosBancarios.conta}</Text>
+            <Text style={estilos.textoDadosBancarios}>Agência                                                                                    {dadosBancarios.agencia}</Text>
         </View>
 
         <View style={estilos.painelPix}>
             <Text style={estilos.textoDadosBancarios}>Pix</Text>
-            <Text style={estilos.textoDadosBancarios}>Chave                                                                         123.456.789-10</Text>
+            <Text style={estilos.textoDadosBancarios}>Chave                                                                         {dadosBancarios.chave_pix}</Text>
         </View>
 
         <TouchableOpacity style={estilos.botaoResgatar}>
@@ -56,7 +91,7 @@ const estilos = StyleSheet.create({
     backgroundColor: 'white',
   },
   imagem: {
-    marginTop: 50,
+    marginTop: 90,
     marginLeft: 30,
     width: 25,
     height: 25
@@ -113,7 +148,7 @@ const estilos = StyleSheet.create({
     width: 80,
     height: 80,
     marginLeft: 250,
-    marginTop: 30
+    marginTop: 70
   },
   imagens: {
       flexDirection: 'row'

@@ -1,23 +1,47 @@
-import { BaseNavigationContainer, NavigationContainer } from "@react-navigation/native";
-import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-
-function navegar(navigation){
-    navigation.navigate("Historico")
-}
+import React, {useState, useEffect} from 'react';
+import {View, Text, StyleSheet, Image} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
+import axios from 'axios';
+import NumberFormat from 'react-number-format';
+import { useIsFocused } from "@react-navigation/native";
+import AsyncStorage from '@react-native-community/async-storage';
 
 const Payment = ({navigation}) => {
+    const [dadosBancarios, setDadosBancarios] = useState({});
+    const isFocused = useIsFocused();
+    //const params = props.navigation.state.params;
+    async function verificaSaldo() {
+        let cpf = await AsyncStorage.getItem('cpf')
+        await axios.post(BASEURL + '/cliente', {cpf: cpf}).then(res => {
+        setDadosBancarios(res.data);
+        Saldo = dadosBancarios.saldo_disponivel
+        });
+    }
+
+    useEffect(() => {
+        if(isFocused){ 
+            verificaSaldo();
+        }
+    }, [isFocused]);
     //const params = props.navigation.state.params;    
     return(
         <View style={estilos.container}>
             <Text style={estilos.textoSaldoDisponivel}>Saldo Disponível</Text>
             <View style={estilos.painelValorDisponivel}>
-                <Text style={estilos.textoValorDisponivel}>67,50 R$</Text>
+            <NumberFormat
+                value={dadosBancarios.saldo_disponivel}
+                decimalScale={2}
+                displayType={'text'}
+                thousandSeparator={true}
+                prefix={'R$ '}
+                renderText={(value, props) => (
+                    <Text style={estilos.textoValorDisponivel}>{value}</Text>
+                )}
+            />
             </View>
 
             <View style={estilos.painel}>
-                <TouchableOpacity style={estilos.botaoResgatar} onPress={ () => navegar(navigation)}>
+                <TouchableOpacity style={estilos.botaoResgatar} onPress={ () => navigation.navigate('Historico', {dadosBancarios: dadosBancarios})}>
                     <Text style={estilos.texto}>Resgatar</Text>
                     <Image style={estilos.imagem} source={require('../../images/money-flow.png')}></Image>
                 </TouchableOpacity>

@@ -1,8 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {View, StyleSheet, Image, Text} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
-
+import MapView, {Marker} from 'react-native-maps';
+import axios from 'axios'
 const LojasProximas = ({navigation}) => {
+  const [lojas, setLojas] = useState([{latitude: 0, longitude: 0, latitude_delta: 0.0922, longitude_delta: 0.0421}])
+  async function buscarLojas(){
+    await axios.get( BASEURL + '/lojas_proximas').then((res) => {
+      setLojas(res.data)
+      console.log(lojas)
+      //console.log({"latitude": parseFloat(lojas[0].latitude), "latitudeDelta": parseFloat(lojas[0].latitude_delta), "longitude": parseFloat(lojas[0].longitude), "longitudeDelta": parseFloat(lojas[0].longitude_delta)})
+    })
+    console.log(lojas)
+  }
+  useEffect(() => {
+    buscarLojas()
+  }, []);
+
+  var state = {
+    markers: [{
+      title: 'hello',
+      coordinates: {
+        latitude: -5.08921,
+        longitude: -42.8016,
+        latitudeDelta : 0.0922 , 
+        longitudeDelta : 0.0421 , 
+      },
+    }]
+  }
+
   return (
     <View style={estilos.container}>
       <View style={estilos.imagens}>
@@ -13,12 +39,25 @@ const LojasProximas = ({navigation}) => {
       </View>
       <Text style={estilos.textoHistorico}>Lojas Próximas</Text>
       <View style={estilos.painelBranco}>
-        <View>
-            <Image style={estilos.imagemMapa} source={require('../../images/google-maps-marker.png')}></Image>
-        </View>
-        <TouchableOpacity style={estilos.botaoResgatar}>
-            <Text style={estilos.textoResgatar}>Navegar</Text>
-        </TouchableOpacity>
+        {lojas ? <View>
+          <MapView 
+            style={estilos.map}
+            showsUserLocation={true}
+            followUserLocation={true}
+            zoomEnabled={true}
+            initialRegion={state.markers[0].coordinates}
+          >
+            {lojas.map((marker, index) => (
+              <MapView.Marker key={index}
+                coordinate={{"latitude": parseFloat(marker.latitude), "longitude": parseFloat(marker.longitude), 
+                "latitudeDelta ": parseFloat(marker.latitude_delta), 
+                "longitudeDelta": parseFloat(marker.longitude_delta)}}
+                title={marker.nome_loja}
+                pinColor="#31C7D0"
+              />
+            ))}
+          </MapView>
+        </View> : <Text>Aguarde</Text>}
       </View>
     </View>
   );
@@ -74,6 +113,10 @@ const estilos = StyleSheet.create({
   },
   imagens: {
       flexDirection: 'row'
+  },
+  map: {
+    width: 400,
+    height: 550
   }
 });
 

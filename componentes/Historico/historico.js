@@ -1,8 +1,32 @@
-import React from 'react';
-import {View, StyleSheet, Image, Text} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { FlatList, View, StyleSheet, Image, Text} from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import axios from 'axios'
+import moment from 'moment'
+import NumberFormat from 'react-number-format';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const Historico = ({navigation}) => {
+  const [data, setData] = useState([])
+  const [valorTotal, setValorTotal] = useState(0)
+  moment.locale('pt-BR')
+  async function historico(){
+    let cpf = await AsyncStorage.getItem('cpf')
+    await axios.post(BASEURL + '/historico_cliente', {cpf_cliente: cpf}).then((res) => {
+      console.log(res.data)
+      setData(res.data)
+      
+      var valor_total = res.data.reduce((a, b) => a + (b['valor_cashback'] || 0), 0);
+      console.log(valor_total)
+      setValorTotal(valor_total)
+
+    })
+  }
+
+  useEffect(() => {
+    historico()
+  }, []);
+  var identifier = 0
   return (
     <View style={estilos.container}>
       <View style={estilos.imagens}>
@@ -14,46 +38,46 @@ const Historico = ({navigation}) => {
       <Text style={estilos.textoHistorico}>Histórico</Text>
       <View style={estilos.painelBranco}>
         <View style={estilos.painelTotalCashabck}>
-          <Text style={estilos.textoTotalCashback}>
-            Total em Cashback                                                      58,00 R$
-          </Text>
+          <NumberFormat 
+            value={valorTotal} 
+            decimalScale={2}
+            displayType={'text'} 
+            thousandSeparator={true} 
+            prefix={'R$ '} 
+            renderText={(value, props) => 
+            <Text style={estilos.textoTotalCashback}>
+              Faturamento no mês                                                       {value}
+            </Text>} 
+          />
         </View>
         <View style={estilos.painelInterno}>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                4,20 R$
-            </Text>
-          </View>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                1,00 R$
-            </Text>
-          </View>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                8,00 R$
-            </Text>
-          </View>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                3,50 R$
-            </Text>
-          </View>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                7,80 R$
-            </Text>
-          </View>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                2,40 R$
-            </Text>
-          </View>
-          <View style={estilos.painelInternoHistorico}>
-            <Text style={estilos.textoPainelHistorico}>
-              Supermercado Carvalho                                                0,80 R$
-            </Text>
-          </View>
+        <FlatList 
+            data={data}
+            keyExtractor={({item}) => (identifier = identifier + 1).toString()}
+            renderItem={({item}) => <View  style={estilos.painelInternoHistorico}>
+              <NumberFormat 
+                value={item.valor_cashback} 
+                decimalScale={2}
+                displayType={'text'} 
+                thousandSeparator={true} 
+                prefix={'R$ '} 
+                renderText={(value, props) => 
+                  <View style={{width: 370}}>
+                    <View>
+                      <Text style={estilos.textoPainelHistoricoNomeLoja}>
+                        {item.nome_loja}
+                      </Text>
+                    </View>
+                    <View style={estilos.textoPainelHistoricoValor}>
+                      <Text>
+                        {value}
+                      </Text>
+                    </View>
+                  </View>
+                }
+              />
+          </View>}
+          />
         </View>
       </View>
     </View>
@@ -107,10 +131,16 @@ const estilos = StyleSheet.create({
     backgroundColor: 'white',
     marginTop: 20,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start'
   },
-  textoPainelHistorico: {
+  textoPainelHistoricoNomeLoja: {
     color: 'black',
+    marginLeft: 15
+  },
+  textoPainelHistoricoValor: {
+    color: 'black',
+    alignItems: 'flex-end',
+    marginTop: -20
   },
   imagemLogo: {
     width: 80,
