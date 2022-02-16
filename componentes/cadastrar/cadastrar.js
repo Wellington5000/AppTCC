@@ -29,10 +29,11 @@ const Cadastrar = ({navigation}) => {
           tipo_chave: tipoChave,
         })
         .then(result => {
+          
           navigation.navigate('Payment');
         });
+        
     } catch (error) {
-      console.log(error);
       createTwoButtonAlert();
     }
   }

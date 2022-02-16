@@ -1,17 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import {View, StyleSheet, Image, Text} from 'react-native';
+import {View, StyleSheet, Image, Text, Alert} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import MapView, {Marker} from 'react-native-maps';
 import axios from 'axios'
 const LojasProximas = ({navigation}) => {
   const [lojas, setLojas] = useState([{latitude: 0, longitude: 0, latitude_delta: 0.0922, longitude_delta: 0.0421}])
+
+  const createTwoButtonAlert = () =>
+    Alert.alert(
+      'Erro ao listar Lojas',
+      'Erro ao listar Lojas, por favor tente mais tarde',
+      [{text: 'Ok', onPress: () => console.log('OK Pressed')}],
+    );
+
   async function buscarLojas(){
-    await axios.get( BASEURL + '/lojas_proximas').then((res) => {
-      setLojas(res.data)
-      console.log(lojas)
-      //console.log({"latitude": parseFloat(lojas[0].latitude), "latitudeDelta": parseFloat(lojas[0].latitude_delta), "longitude": parseFloat(lojas[0].longitude), "longitudeDelta": parseFloat(lojas[0].longitude_delta)})
-    })
-    console.log(lojas)
+    try {
+      await axios.get( BASEURL + '/lojas_proximas').then((res) => {
+        setLojas(res.data)
+      })
+    } catch (error) {
+      createTwoButtonAlert()
+    }
   }
   useEffect(() => {
     buscarLojas()

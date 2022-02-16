@@ -1,13 +1,14 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import {View, StyleSheet, Image, Text, Alert} from 'react-native';
+import {View, StyleSheet, Image, Text, Alert, ActivityIndicator} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import NumberFormat from 'react-number-format';
 import AsyncStorage from '@react-native-community/async-storage';
 
 const Resgatar = ({route, navigation}) => {
   const [dadosBancarios, setDadosBancarios] = useState({})
-  
+  const [loading, setLoading] = useState(true)
+
   const createTwoButtonAlert = () =>
   Alert.alert(
     "Resgate Efetivado",
@@ -17,13 +18,26 @@ const Resgatar = ({route, navigation}) => {
     ]
   );
 
+  const errorMsg = () =>
+    Alert.alert(
+      'Erro ao solicitar resgate',
+      'Ocorreu um erro ao solicitar o resgate, por favor tente mais tarde',
+      [{text: 'Ok', onPress: () => console.log('OK Pressed')}],
+    );
+
   async function resgate(){
-    let cpf = await AsyncStorage.getItem('cpf')
-    await axios.post( BASEURL + '/resgate_cliente', {chave_pix: dadosBancarios.chave_pix, valor: route.params.dadosBancarios.saldo_disponivel, cpf: cpf}).then((res) => {
-      Saldo = 0
-      dadosBancarios.saldo_disponivel = 0
-      if(res.data) createTwoButtonAlert()
-    })
+    try {
+      setLoading(false)
+      let cpf = await AsyncStorage.getItem('cpf')
+      await axios.post( BASEURL + '/resgate_cliente', {chave_pix: dadosBancarios.chave_pix, valor: route.params.dadosBancarios.saldo_disponivel, cpf: cpf}).then((res) => {
+        Saldo = 0
+        dadosBancarios.saldo_disponivel = 0
+        setLoading(true)
+        if(res.data) createTwoButtonAlert()
+      })
+    } catch (error) {
+      errorMsg()
+    }
   }
 
   useEffect(() => {
@@ -73,6 +87,10 @@ const Resgatar = ({route, navigation}) => {
             <Text style={estilos.textoResgatar}>Alterar</Text>
         </TouchableOpacity>
       </View>
+      {(loading) ? console.log('') : <View style={estilos.loading}>
+          <ActivityIndicator animating={true} size={70} color="#31C7D0"  />
+        </View>
+      }
     </View>
   );
 };
@@ -82,6 +100,7 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
     backgroundColor: '#31C7D0',
+    alignItems: 'center'
   },
   painelBranco: {
     alignItems: 'center',
@@ -91,7 +110,7 @@ const estilos = StyleSheet.create({
     backgroundColor: 'white',
   },
   imagem: {
-    marginTop: 90,
+    marginTop: 50,
     marginLeft: 30,
     width: 25,
     height: 25
@@ -148,10 +167,14 @@ const estilos = StyleSheet.create({
     width: 80,
     height: 80,
     marginLeft: 250,
-    marginTop: 70
+    marginTop: 30
   },
   imagens: {
       flexDirection: 'row'
+  },
+  loading: {
+    position: 'absolute',
+    justifyContent: 'center'
   }
 });
 

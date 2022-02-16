@@ -12,9 +12,9 @@ import LojasProximas from './componentes/LojasProximas/lojasProximas';
 import Cadastrar from './componentes/cadastrar/cadastrar';
 
 const Stack = createStackNavigator();
-global.BASEURL = 'http://192.168.18.8:3000'
+//global.BASEURL = 'http://192.168.18.8:3000'
 global.Saldo = 0
-//global.BASEURL = 'https://api-pix.herokuapp.com'
+global.BASEURL = 'https://api-pix.herokuapp.com'
 const App = () => {
   return (
     <NavigationContainer>

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, ActivityIndicator, Alert} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import axios from 'axios';
 import NumberFormat from 'react-number-format';
@@ -9,13 +9,26 @@ import AsyncStorage from '@react-native-community/async-storage';
 const Payment = ({navigation}) => {
     const [dadosBancarios, setDadosBancarios] = useState({});
     const isFocused = useIsFocused();
-    //const params = props.navigation.state.params;
+    const [loading, setLoading] = useState(false)
+
+    const createTwoButtonAlert = () =>
+        Alert.alert(
+        'Erro ao buscar seus dados',
+        'Erro ao buscar seus dados, por favor tente mais tarde',
+        [{text: 'Ok', onPress: () => console.log('OK Pressed')}],
+    );
+
     async function verificaSaldo() {
-        let cpf = await AsyncStorage.getItem('cpf')
-        await axios.post(BASEURL + '/cliente', {cpf: cpf}).then(res => {
-        setDadosBancarios(res.data);
-        Saldo = dadosBancarios.saldo_disponivel
-        });
+        try {
+            let cpf = await AsyncStorage.getItem('cpf')
+            await axios.post(BASEURL + '/cliente', {cpf: cpf}).then(res => {
+            setDadosBancarios(res.data);
+            Saldo = dadosBancarios.saldo_disponivel
+            setLoading(true)
+            });
+        } catch (error) {
+            createTwoButtonAlert()
+        }
     }
 
     useEffect(() => {
@@ -56,6 +69,10 @@ const Payment = ({navigation}) => {
                     <Image style={estilos.imagem} source={require('../../images/dataPagamento.png')}></Image>
                 </TouchableOpacity>
             </View>
+            {(loading) ? console.log('') : <View style={estilos.loading}>
+          <ActivityIndicator animating={true} size={70} color="#31C7D0"  />
+        </View>
+      }
         </View>
     )
 }
@@ -114,6 +131,10 @@ const estilos = StyleSheet.create({
         height: 60,
         marginLeft: 110,
         marginTop: 20
+    },
+    loading: {
+      position: 'absolute',
+      justifyContent: 'center'
     }
 })
 
